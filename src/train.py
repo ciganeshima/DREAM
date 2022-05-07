@@ -119,6 +119,7 @@ def train_dream():
             writer.add_scalar('model/grad_norm', grad_norm, epoch * num_batchs + i)
             writer.add_scalar('model/weight_update_ratio', weight_update_ratio, epoch * num_batchs + i)
 
+
 def train_reorder_dream():
     dr_model.train()  # turn on training mode for dropout
     dr_hidden = dr_model.init_hidden(dr_config.batch_size)
@@ -169,7 +170,7 @@ def train_reorder_dream():
         # Logging
         if i % dr_config.log_interval == 0 and i > 0:
             elapsed = (time() - start_time) * 1000 / dr_config.log_interval
-            cur_loss = total_loss[0] / dr_config.log_interval / dr_config.batch_size # turn tensor into float
+            cur_loss = total_loss[0] / dr_config.log_interval / dr_config.batch_size  # turn tensor into float
             total_loss = 0
             start_time = time()
             print(
@@ -238,10 +239,11 @@ if constants.REORDER:
     # User's item history
     ub_ihis = bc.get_item_history('prior', reconstruct=False)
     # Train test split
-    train_ub, test_ub, train_rbks, test_rbks, train_ihis, test_ihis = train_test_split(ub_basket, ub_rbks, ub_ihis, test_size=0.2)
+    train_ub, test_ub, train_rbks, test_rbks, train_ihis, test_ihis = train_test_split(ub_basket, ub_rbks, ub_ihis,
+                                                                                       test_size=0.2)
     del ub_basket, ub_rbks, ub_ihis  # memory saving
     train_ub, test_ub = Dataset(train_ub, train_rbks, train_ihis), Dataset(test_ub, test_rbks, test_ihis)
-    del train_rbks, test_rbks, train_ihis, test_ihis # memory saving
+    del train_rbks, test_rbks, train_ihis, test_ihis  # memory saving
 else:
     train_ub, test_ub = train_test_split(ub_basket, test_size=0.2)
     del ub_basket
@@ -254,7 +256,7 @@ if dr_config.cuda:
     dr_model.cuda()
 
 # Optimizer
-optim = torch.optim.Adam(dr_model.parameters(), lr = dr_config.learning_rate)
+optim = torch.optim.Adam(dr_model.parameters(), lr=dr_config.learning_rate)
 # optim = torch.optim.Adadelta(dr_model.parameters())
 # optim = torch.optim.SGD(dr_model.parameters(), lr=dr_config.learning_rate, momentum=0.9)
 writer = SummaryWriter(log_dir='runs/{}'.format(dr_config.alias))  # tensorboard writer
@@ -262,8 +264,8 @@ writer.add_text('config', str(dr_config))
 best_val_loss = None
 
 try:
-    for k,v in constants.DREAM_CONFIG.items():
-        print(k,v)
+    for k, v in constants.DREAM_CONFIG.items():
+        print(k, v)
     # training
     for epoch in range(dr_config.epochs):
         if constants.REORDER:
@@ -278,7 +280,7 @@ try:
         print('-' * 89)
         # checkpoint
         if not best_val_loss or val_loss < best_val_loss:
-            with open(dr_config.checkpoint_dir.format(epoch = epoch, loss = val_loss), 'wb') as f:
+            with open(dr_config.checkpoint_dir.format(epoch=epoch, loss=val_loss), 'wb') as f:
                 torch.save(dr_model, f)
             best_val_loss = val_loss
         else:
